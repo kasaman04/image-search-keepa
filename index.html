@@ -328,6 +328,80 @@
             font-weight: 800;
         }
 
+        .selection-panel {
+            display: none;
+            grid-template-columns: minmax(0, 1fr) auto;
+            gap: 14px;
+            margin-bottom: 20px;
+            padding: 16px;
+            border: 1px solid #dcd8ff;
+            border-radius: 14px;
+            background: #f8f7ff;
+        }
+
+        .selection-panel.visible {
+            display: grid;
+        }
+
+        .selection-summary {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            margin-bottom: 9px;
+            color: #3f3a76;
+            font-size: 0.86rem;
+            font-weight: 800;
+        }
+
+        .selected-count {
+            display: grid;
+            min-width: 28px;
+            height: 28px;
+            padding: 0 7px;
+            place-items: center;
+            border-radius: 8px;
+            background: var(--primary);
+            color: #fff;
+        }
+
+        .asin-output {
+            width: 100%;
+            min-height: 88px;
+            padding: 11px 12px;
+            border: 1px solid #dedcf1;
+            border-radius: 10px;
+            background: #fff;
+            color: #303548;
+            font-family: ui-monospace, SFMono-Regular, Consolas, monospace;
+            font-size: 0.84rem;
+            line-height: 1.5;
+            resize: vertical;
+        }
+
+        .selection-actions {
+            display: flex;
+            min-width: 138px;
+            flex-direction: column;
+            gap: 8px;
+            justify-content: flex-end;
+        }
+
+        .copy-btn,
+        .deselect-btn {
+            padding: 11px 14px;
+        }
+
+        .copy-btn {
+            background: var(--primary);
+            color: #fff;
+        }
+
+        .deselect-btn {
+            border: 1px solid var(--line);
+            background: #fff;
+            color: #626b7d;
+        }
+
         .results-grid {
             display: grid;
             grid-template-columns: repeat(auto-fill, minmax(235px, 1fr));
@@ -352,7 +426,13 @@
             transform: translateY(-3px);
         }
 
+        .product-card.selected {
+            border-color: var(--primary);
+            box-shadow: 0 0 0 3px rgba(98, 87, 232, 0.12), 0 14px 30px rgba(35, 43, 71, 0.13);
+        }
+
         .product-image-wrap {
+            position: relative;
             display: grid;
             height: 230px;
             place-items: center;
@@ -364,6 +444,33 @@
                 #fbfbfc;
             background-position: 0 0, 8px 8px;
             background-size: 16px 16px;
+        }
+
+        .product-check {
+            position: absolute;
+            top: 12px;
+            left: 12px;
+            display: flex;
+            align-items: center;
+            gap: 7px;
+            padding: 7px 10px;
+            border: 1px solid #dfe2ea;
+            border-radius: 10px;
+            background: rgba(255, 255, 255, 0.96);
+            box-shadow: 0 5px 14px rgba(35, 43, 71, 0.12);
+            color: #434b5d;
+            font-size: 0.76rem;
+            font-weight: 800;
+            cursor: pointer;
+            z-index: 1;
+        }
+
+        .product-check input {
+            width: 18px;
+            height: 18px;
+            margin: 0;
+            accent-color: var(--primary);
+            cursor: pointer;
         }
 
         .product-image {
@@ -471,6 +578,19 @@
             .results-grid {
                 grid-template-columns: 1fr;
             }
+
+            .selection-panel.visible {
+                grid-template-columns: 1fr;
+            }
+
+            .selection-actions {
+                min-width: 0;
+                flex-direction: row;
+            }
+
+            .selection-actions button {
+                flex: 1;
+            }
         }
     </style>
 </head>
@@ -527,6 +647,19 @@
                     <h2>商品一覧</h2>
                     <span class="result-count" id="resultCount"></span>
                 </div>
+                <div class="selection-panel" id="selectionPanel">
+                    <div>
+                        <div class="selection-summary">
+                            <span class="selected-count" id="selectedCount">0</span>
+                            <span>選択した商品のASIN</span>
+                        </div>
+                        <textarea class="asin-output" id="asinOutput" readonly aria-label="選択した商品のASIN"></textarea>
+                    </div>
+                    <div class="selection-actions">
+                        <button type="button" class="copy-btn" id="copyAsinButton">ASINをコピー</button>
+                        <button type="button" class="deselect-btn" id="deselectButton">選択を解除</button>
+                    </div>
+                </div>
                 <div class="results-grid" id="resultsGrid"></div>
             </section>
         </div>
@@ -542,6 +675,11 @@
         const resultsSection = document.getElementById("resultsSection");
         const resultsGrid = document.getElementById("resultsGrid");
         const resultCount = document.getElementById("resultCount");
+        const selectionPanel = document.getElementById("selectionPanel");
+        const selectedCount = document.getElementById("selectedCount");
+        const asinOutput = document.getElementById("asinOutput");
+        const copyAsinButton = document.getElementById("copyAsinButton");
+        const deselectButton = document.getElementById("deselectButton");
 
         function showStatus(message, type) {
             statusMessage.textContent = message;
@@ -659,12 +797,70 @@
                 }));
         }
 
+        function updateAsinSelection() {
+            const checkedBoxes = [...resultsGrid.querySelectorAll(".product-select:checked")];
+            const asins = checkedBoxes.map((checkbox) => checkbox.value);
+
+            selectedCount.textContent = String(asins.length);
+            asinOutput.value = asins.join("\n");
+            selectionPanel.classList.toggle("visible", asins.length > 0);
+
+            resultsGrid.querySelectorAll(".product-card").forEach((card) => {
+                const checkbox = card.querySelector(".product-select");
+                card.classList.toggle("selected", Boolean(checkbox?.checked));
+            });
+        }
+
+        async function copySelectedAsins() {
+            if (!asinOutput.value) {
+                return;
+            }
+
+            try {
+                await navigator.clipboard.writeText(asinOutput.value);
+            } catch {
+                asinOutput.select();
+                document.execCommand("copy");
+                window.getSelection()?.removeAllRanges();
+            }
+
+            const originalText = copyAsinButton.textContent;
+            copyAsinButton.textContent = "コピーしました";
+            setTimeout(() => {
+                copyAsinButton.textContent = originalText;
+            }, 1600);
+        }
+
+        function deselectProducts() {
+            resultsGrid.querySelectorAll(".product-select:checked").forEach((checkbox) => {
+                checkbox.checked = false;
+            });
+            updateAsinSelection();
+        }
+
         function createProductCard(product, index) {
             const card = document.createElement("article");
             card.className = "product-card";
 
             const imageWrap = document.createElement("div");
             imageWrap.className = "product-image-wrap";
+
+            if (/^[A-Z0-9]{10}$/i.test(product.asin.trim())) {
+                const checkLabel = document.createElement("label");
+                checkLabel.className = "product-check";
+
+                const checkbox = document.createElement("input");
+                checkbox.className = "product-select";
+                checkbox.type = "checkbox";
+                checkbox.value = product.asin.trim();
+                checkbox.setAttribute("aria-label", `${product.asin.trim()}を選択`);
+                checkbox.addEventListener("change", updateAsinSelection);
+
+                const checkText = document.createElement("span");
+                checkText.textContent = "選択";
+                checkLabel.append(checkbox, checkText);
+                imageWrap.appendChild(checkLabel);
+            }
 
             const image = document.createElement("img");
             image.className = "product-image";
@@ -732,6 +928,7 @@
             }
 
             resultsGrid.replaceChildren();
+            updateAsinSelection();
             const fragment = document.createDocumentFragment();
             products.forEach((product, index) => {
                 fragment.appendChild(createProductCard(product, index));
@@ -774,6 +971,7 @@
             urlInput.value = "";
             csvFile.value = "";
             resultsGrid.replaceChildren();
+            updateAsinSelection();
             resultsSection.style.display = "none";
             statusMessage.textContent = "";
             statusMessage.className = "status-message";
@@ -805,6 +1003,8 @@
         dropZone.addEventListener("drop", (event) => handleCsv(event.dataTransfer.files[0]));
         processButton.addEventListener("click", handleManualInput);
         clearButton.addEventListener("click", clearAll);
+        copyAsinButton.addEventListener("click", copySelectedAsins);
+        deselectButton.addEventListener("click", deselectProducts);
         urlInput.addEventListener("keydown", (event) => {
             if (event.key === "Enter" && event.ctrlKey) {
                 event.preventDefault();
