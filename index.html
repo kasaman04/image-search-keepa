@@ -6,432 +6,809 @@
     <title>画像検索ツール</title>
     <style>
         * {
+            box-sizing: border-box;
             margin: 0;
             padding: 0;
-            box-sizing: border-box;
+        }
+
+        :root {
+            --ink: #18202f;
+            --muted: #657086;
+            --line: #e5e9f2;
+            --surface: #ffffff;
+            --surface-soft: #f7f8fc;
+            --primary: #6257e8;
+            --primary-dark: #4a3fd0;
+            --amazon: #ffad22;
         }
 
         body {
-            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
             min-height: 100vh;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            padding: 20px;
+            padding: 38px 20px 64px;
+            background:
+                radial-gradient(circle at 8% 5%, rgba(98, 87, 232, 0.14), transparent 30%),
+                radial-gradient(circle at 94% 12%, rgba(55, 176, 138, 0.11), transparent 24%),
+                #f3f5fa;
+            color: var(--ink);
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
         }
 
         .container {
-            background: white;
-            border-radius: 20px;
-            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
-            padding: 40px;
-            max-width: 800px;
-            width: 100%;
+            width: min(1180px, 100%);
+            margin: 0 auto;
+            overflow: hidden;
+            border: 1px solid rgba(218, 223, 235, 0.9);
+            border-radius: 26px;
+            background: var(--surface);
+            box-shadow: 0 24px 70px rgba(32, 38, 62, 0.13);
+        }
+
+        .hero {
+            position: relative;
+            overflow: hidden;
+            padding: 42px 44px 38px;
+            background: linear-gradient(130deg, #1d2340 0%, #343062 58%, #5146b8 100%);
+            color: #fff;
+        }
+
+        .hero::after {
+            position: absolute;
+            top: -100px;
+            right: -70px;
+            width: 290px;
+            height: 290px;
+            border: 52px solid rgba(255, 255, 255, 0.055);
+            border-radius: 50%;
+            content: "";
+        }
+
+        .eyebrow {
+            display: inline-flex;
+            align-items: center;
+            gap: 7px;
+            margin-bottom: 14px;
+            padding: 6px 10px;
+            border: 1px solid rgba(255, 255, 255, 0.18);
+            border-radius: 999px;
+            background: rgba(255, 255, 255, 0.09);
+            color: #dcd9ff;
+            font-size: 0.72rem;
+            font-weight: 800;
+            letter-spacing: 0.08em;
+        }
+
+        .hero-content {
+            position: relative;
+            z-index: 1;
+            max-width: 760px;
         }
 
         h1 {
-            color: #333;
-            margin-bottom: 10px;
-            font-size: 2em;
+            margin-bottom: 12px;
+            font-size: clamp(1.8rem, 4vw, 2.65rem);
+            letter-spacing: -0.025em;
+            line-height: 1.15;
         }
 
         .subtitle {
-            color: #666;
-            margin-bottom: 30px;
-            font-size: 0.9em;
+            max-width: 700px;
+            margin-bottom: 21px;
+            color: #d7d9e8;
+            line-height: 1.65;
         }
 
-        .input-section {
-            margin-bottom: 30px;
+        .feature-list {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 8px;
+            list-style: none;
+        }
+
+        .feature-list li {
+            padding: 7px 11px;
+            border-radius: 999px;
+            background: rgba(255, 255, 255, 0.1);
+            color: #f3f2ff;
+            font-size: 0.78rem;
+            font-weight: 650;
+        }
+
+        .workspace {
+            padding: 34px 44px 42px;
+        }
+
+        .section-label {
+            display: flex;
+            align-items: center;
+            gap: 9px;
+            margin-bottom: 12px;
+            color: #424b5f;
+            font-size: 0.83rem;
+            font-weight: 800;
+            letter-spacing: 0.025em;
+        }
+
+        .step-number {
+            display: grid;
+            width: 24px;
+            height: 24px;
+            place-items: center;
+            border-radius: 7px;
+            background: #eeecff;
+            color: var(--primary-dark);
+            font-size: 0.72rem;
+        }
+
+        .drop-zone {
+            display: grid;
+            min-height: 196px;
+            place-items: center;
+            padding: 28px;
+            border: 2px dashed #b9b5ea;
+            border-radius: 18px;
+            background:
+                linear-gradient(135deg, rgba(98, 87, 232, 0.055), rgba(55, 176, 138, 0.035)),
+                #fbfbfe;
+            text-align: center;
+            cursor: pointer;
+            transition: 0.2s ease;
+        }
+
+        .drop-zone:hover,
+        .drop-zone.dragover {
+            border-color: var(--primary);
+            background: #f0efff;
+            box-shadow: 0 0 0 5px rgba(98, 87, 232, 0.08);
+            transform: translateY(-1px);
+        }
+
+        .drop-icon {
+            display: grid;
+            width: 58px;
+            height: 58px;
+            margin: 0 auto 14px;
+            place-items: center;
+            border: 1px solid #dedbff;
+            border-radius: 16px;
+            background: #fff;
+            box-shadow: 0 8px 20px rgba(71, 62, 166, 0.12);
+            font-size: 1.75rem;
+        }
+
+        .drop-title {
+            margin-bottom: 6px;
+            color: #272d3d;
+            font-size: 1.08rem;
+            font-weight: 800;
+        }
+
+        .drop-note {
+            color: var(--muted);
+            font-size: 0.86rem;
+        }
+
+        #csvFile {
+            display: none;
+        }
+
+        .divider {
+            display: flex;
+            align-items: center;
+            gap: 16px;
+            margin: 27px 0;
+            color: #999;
+            font-size: 0.85rem;
+        }
+
+        .divider::before,
+        .divider::after {
+            flex: 1;
+            height: 1px;
+            background: #e4e4e4;
+            content: "";
         }
 
         label {
             display: block;
-            margin-bottom: 10px;
+            margin-bottom: 9px;
             color: #555;
-            font-weight: 500;
+            font-weight: 600;
         }
 
         textarea {
             width: 100%;
-            padding: 15px;
-            border: 2px solid #e0e0e0;
-            border-radius: 10px;
+            min-height: 110px;
+            padding: 14px;
+            border: 1px solid var(--line);
+            border-radius: 12px;
+            background: #fbfcfe;
+            font: inherit;
             font-size: 14px;
             resize: vertical;
-            min-height: 120px;
-            transition: border-color 0.3s;
+            transition: border-color 0.2s;
         }
 
         textarea:focus {
+            border-color: var(--primary);
+            background: #fff;
+            box-shadow: 0 0 0 4px rgba(98, 87, 232, 0.08);
             outline: none;
-            border-color: #667eea;
         }
 
         .button-group {
             display: flex;
-            gap: 10px;
-            margin-bottom: 30px;
+            gap: 12px;
+            margin-top: 16px;
         }
 
-        button {
-            flex: 1;
-            padding: 15px 30px;
+        button,
+        .action-button {
             border: none;
-            border-radius: 10px;
-            font-size: 16px;
-            font-weight: 600;
+            border-radius: 9px;
+            font: inherit;
+            font-weight: 700;
             cursor: pointer;
-            transition: all 0.3s;
+            transition: 0.2s ease;
+        }
+
+        .process-btn,
+        .clear-btn {
+            padding: 13px 24px;
         }
 
         .process-btn {
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            color: white;
-        }
-
-        .process-btn:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 10px 20px rgba(102, 126, 234, 0.4);
-        }
-
-        .process-btn:disabled {
-            background: #ccc;
-            cursor: not-allowed;
-            transform: none;
+            flex: 1;
+            background: linear-gradient(135deg, var(--primary), var(--primary-dark));
+            color: #fff;
+            box-shadow: 0 8px 18px rgba(98, 87, 232, 0.2);
         }
 
         .clear-btn {
-            background: #f5f5f5;
-            color: #666;
+            border: 1px solid var(--line);
+            background: #fff;
+            color: #5d6678;
         }
 
-        .clear-btn:hover {
-            background: #e0e0e0;
+        button:hover,
+        .action-button:hover {
+            transform: translateY(-1px);
+            filter: brightness(0.96);
         }
 
         .status-message {
-            text-align: center;
-            padding: 10px;
-            border-radius: 10px;
-            margin-bottom: 20px;
             display: none;
+            margin-top: 22px;
+            padding: 12px 16px;
+            border-radius: 10px;
+            text-align: center;
         }
 
         .status-message.success {
-            background: #d4edda;
-            color: #155724;
-            border: 1px solid #c3e6cb;
+            display: block;
+            border: 1px solid #badbcc;
+            background: #d1e7dd;
+            color: #0f5132;
         }
 
         .status-message.error {
+            display: block;
+            border: 1px solid #f5c2c7;
             background: #f8d7da;
-            color: #721c24;
-            border: 1px solid #f5c6cb;
+            color: #842029;
         }
 
         .status-message.info {
-            background: #d1ecf1;
-            color: #0c5460;
-            border: 1px solid #bee5eb;
+            display: block;
+            border: 1px solid #b6effb;
+            background: #cff4fc;
+            color: #055160;
         }
 
         .results-section {
             display: none;
+            margin-top: 40px;
+            padding-top: 30px;
+            border-top: 1px solid var(--line);
+        }
+
+        .results-heading {
+            display: flex;
+            align-items: baseline;
+            justify-content: space-between;
+            gap: 12px;
+            margin-bottom: 18px;
+        }
+
+        .result-count {
+            padding: 6px 10px;
+            border-radius: 999px;
+            background: #f0efff;
+            color: var(--primary-dark);
+            font-size: 0.78rem;
+            font-weight: 800;
         }
 
         .results-grid {
             display: grid;
-            grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+            grid-template-columns: repeat(auto-fill, minmax(235px, 1fr));
             gap: 20px;
-            margin-top: 20px;
         }
 
-        .image-item {
-            position: relative;
-            background: #f5f5f5;
-            border-radius: 10px;
-            overflow: visible;
-            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        .product-card {
+            display: flex;
+            min-width: 0;
+            overflow: hidden;
+            border: 1px solid var(--line);
+            border-radius: 16px;
+            background: #fff;
+            box-shadow: 0 5px 18px rgba(35, 43, 71, 0.075);
+            flex-direction: column;
+            transition: 0.22s ease;
         }
 
-        .image-item img {
+        .product-card:hover {
+            border-color: #cbc7f2;
+            box-shadow: 0 14px 30px rgba(35, 43, 71, 0.13);
+            transform: translateY(-3px);
+        }
+
+        .product-image-wrap {
+            display: grid;
+            height: 230px;
+            place-items: center;
+            padding: 14px;
+            border-bottom: 1px solid #eceef4;
+            background:
+                linear-gradient(45deg, #f6f7fa 25%, transparent 25%),
+                linear-gradient(-45deg, #f6f7fa 25%, transparent 25%),
+                #fbfbfc;
+            background-position: 0 0, 8px 8px;
+            background-size: 16px 16px;
+        }
+
+        .product-image {
             width: 100%;
-            height: 200px;
-            object-fit: cover;
-            border-radius: 10px 10px 0 0;
+            height: 100%;
+            object-fit: contain;
         }
 
-        .image-actions {
-            padding: 10px;
-            background: white;
-            border-radius: 0 0 10px 10px;
-            border: 1px solid #e0e0e0;
-            border-top: none;
+        .product-body {
+            display: flex;
+            flex: 1;
+            padding: 14px;
+            flex-direction: column;
+        }
+
+        .product-number {
+            margin-bottom: 6px;
+            color: #8a92a3;
+            font-size: 0.75rem;
+            font-weight: 700;
+        }
+
+        .product-title {
+            display: -webkit-box;
+            min-height: 3.9em;
+            margin-bottom: 9px;
+            overflow: hidden;
+            font-size: 0.94rem;
+            line-height: 1.3;
+            -webkit-box-orient: vertical;
+            -webkit-line-clamp: 3;
+        }
+
+        .asin {
+            margin-bottom: 13px;
+            color: #778095;
+            font-size: 0.78rem;
+            font-family: ui-monospace, SFMono-Regular, Consolas, monospace;
+        }
+
+        .card-actions {
+            display: grid;
+            gap: 8px;
+            margin-top: auto;
         }
 
         .action-button {
-            width: 100%;
-            padding: 10px;
-            margin-bottom: 8px;
-            border: none;
-            border-radius: 5px;
-            font-size: 14px;
-            font-weight: 600;
-            cursor: pointer;
-            transition: all 0.3s;
-            text-decoration: none;
             display: block;
+            width: 100%;
+            padding: 11px 10px;
+            color: #fff;
             text-align: center;
-        }
-
-        .action-button:last-child {
-            margin-bottom: 0;
+            text-decoration: none;
         }
 
         .google-lens-btn {
-            background: linear-gradient(135deg, #4285f4 0%, #34a853 25%, #fbbc04 50%, #ea4335 75%);
-            color: white;
+            background: linear-gradient(135deg, #4f67df, #6554d8);
+            box-shadow: 0 6px 14px rgba(79, 103, 223, 0.18);
         }
 
-        .google-lens-btn:hover {
-            opacity: 0.9;
-            transform: translateY(-1px);
-            box-shadow: 0 3px 10px rgba(0,0,0,0.2);
+        .amazon-btn {
+            border: 1px solid #f0a019;
+            background: linear-gradient(180deg, #ffbd49, var(--amazon));
+            color: #25200f;
+            box-shadow: 0 6px 14px rgba(255, 153, 0, 0.16);
         }
 
-        .yodobashi-btn {
-            background: linear-gradient(135deg, #ff6b00 0%, #ff8800 100%);
-            color: white;
+        .amazon-btn.disabled {
+            background: #ddd;
+            color: #888;
+            cursor: not-allowed;
+            pointer-events: none;
         }
 
-        .yodobashi-btn:hover {
-            opacity: 0.9;
-            transform: translateY(-1px);
-            box-shadow: 0 3px 10px rgba(255, 107, 0, 0.3);
-        }
+        @media (max-width: 600px) {
+            body {
+                padding: 12px 10px 30px;
+            }
 
-        .image-label {
-            font-size: 12px;
-            color: #666;
-            margin-bottom: 8px;
-            text-align: center;
-            font-weight: 600;
-        }
+            .container {
+                border-radius: 18px;
+            }
 
-        .error-item {
-            background: #f8d7da;
-            padding: 15px;
-            border-radius: 10px;
-            font-size: 12px;
-            color: #721c24;
-            text-align: center;
+            .hero {
+                padding: 30px 20px 26px;
+            }
+
+            .workspace {
+                padding: 24px 16px 30px;
+            }
+
+            .feature-list {
+                gap: 6px;
+            }
+
+            .drop-zone {
+                min-height: 175px;
+                padding: 22px 15px;
+            }
+
+            .button-group {
+                flex-direction: column;
+            }
+
+            .results-grid {
+                grid-template-columns: 1fr;
+            }
         }
     </style>
 </head>
 <body>
-    <div class="container">
-        <h1>🔍 画像検索ツール</h1>
-        <p class="subtitle">複数行のURLリストを入力してください。各行の最初の画像をGoogle Lensで検索できます</p>
-        
-        <div class="input-section">
-            <label for="urlInput">画像URL（各行セミコロン区切り）:</label>
-            <textarea 
-                id="urlInput" 
-                placeholder="例:
-https://example.com/image1.jpg;https://example.com/image2.png
-https://example.com/image3.jpg;https://example.com/image4.png"
-            ></textarea>
-        </div>
+    <main class="container">
+        <header class="hero">
+            <div class="hero-content">
+                <div class="eyebrow">PRODUCT RESEARCH TOOL</div>
+                <h1>画像から商品を、すばやく調査。</h1>
+                <p class="subtitle">
+                    KeepaのCSVを読み込み、商品画像をまとめて確認。
+                    Google Lensでのヨドバシ検索とAmazon商品ページへの移動を、ひとつの画面で行えます。
+                </p>
+                <ul class="feature-list" aria-label="主な機能">
+                    <li>CSVドラッグ＆ドロップ</li>
+                    <li>Google Lens検索</li>
+                    <li>Amazonへ直接移動</li>
+                </ul>
+            </div>
+        </header>
 
-        <div class="button-group">
-            <button class="process-btn" onclick="processImages()">
-                画像を処理
-            </button>
-            <button class="clear-btn" onclick="clearAll()">
-                クリア
-            </button>
-        </div>
+        <div class="workspace">
+            <section>
+                <div class="section-label"><span class="step-number">1</span>Keepa CSVを読み込む</div>
+                <div class="drop-zone" id="dropZone" role="button" tabindex="0" aria-label="Keepa CSVを選択">
+                    <div>
+                        <span class="drop-icon">📄</span>
+                        <p class="drop-title">CSVファイルをドロップ</p>
+                        <p class="drop-note">クリックしてファイルを選択することもできます</p>
+                    </div>
+                </div>
+                <input type="file" id="csvFile" accept=".csv,text/csv">
+            </section>
 
-        <div class="status-message" id="statusMessage"></div>
+            <div class="divider">または従来の方法</div>
 
-        <div class="results-section" id="resultsSection">
-            <h3>検索可能な画像:</h3>
-            <div class="results-grid" id="resultsGrid"></div>
+            <section>
+                <div class="section-label"><span class="step-number">2</span>画像URLを直接入力</div>
+                <label for="urlInput">画像URL（各行セミコロン区切り）</label>
+                <textarea
+                    id="urlInput"
+                    placeholder="https://example.com/image1.jpg;https://example.com/image2.jpg&#10;https://example.com/image3.jpg"
+                ></textarea>
+                <div class="button-group">
+                    <button type="button" class="process-btn" id="processButton">画像を表示する</button>
+                    <button type="button" class="clear-btn" id="clearButton">クリア</button>
+                </div>
+            </section>
+
+            <div class="status-message" id="statusMessage" role="status"></div>
+
+            <section class="results-section" id="resultsSection">
+                <div class="results-heading">
+                    <h2>商品一覧</h2>
+                    <span class="result-count" id="resultCount"></span>
+                </div>
+                <div class="results-grid" id="resultsGrid"></div>
+            </section>
         </div>
-    </div>
+    </main>
 
     <script>
-        let isProcessing = false;
+        const dropZone = document.getElementById("dropZone");
+        const csvFile = document.getElementById("csvFile");
+        const urlInput = document.getElementById("urlInput");
+        const processButton = document.getElementById("processButton");
+        const clearButton = document.getElementById("clearButton");
+        const statusMessage = document.getElementById("statusMessage");
+        const resultsSection = document.getElementById("resultsSection");
+        const resultsGrid = document.getElementById("resultsGrid");
+        const resultCount = document.getElementById("resultCount");
 
         function showStatus(message, type) {
-            const statusEl = document.getElementById('statusMessage');
-            statusEl.textContent = message;
-            statusEl.className = `status-message ${type}`;
-            statusEl.style.display = 'block';
-            
-            if (type !== 'info') {
-                setTimeout(() => {
-                    statusEl.style.display = 'none';
-                }, 5000);
-            }
+            statusMessage.textContent = message;
+            statusMessage.className = `status-message ${type}`;
         }
 
-        async function loadImage(url) {
-            return new Promise((resolve) => {
-                const img = new Image();
-                img.crossOrigin = 'anonymous';
-                
-                img.onload = () => {
-                    resolve({ success: true, url, img });
-                };
-                
-                img.onerror = () => {
-                    // CORSエラーの場合でも、URLは有効として扱う
-                    resolve({ success: true, url, img: null });
-                };
-                
-                // プロキシ経由で試みる
-                img.src = `https://corsproxy.io/?${encodeURIComponent(url)}`;
-                
-                // タイムアウト設定
-                setTimeout(() => {
-                    resolve({ success: true, url, img: null });
-                }, 3000);
-            });
-        }
+        function parseCsv(text) {
+            const rows = [];
+            let row = [];
+            let field = "";
+            let inQuotes = false;
 
-        async function processImages() {
-            if (isProcessing) {
-                showStatus('処理中です。しばらくお待ちください。', 'info');
-                return;
-            }
+            for (let i = 0; i < text.length; i++) {
+                const char = text[i];
 
-            const urlInput = document.getElementById('urlInput').value.trim();
-            
-            if (!urlInput) {
-                showStatus('URLを入力してください', 'error');
-                return;
-            }
-
-            // 改行で行を分割し、各行の最初のURLを取得
-            const lines = urlInput.split('\n')
-                .map(line => line.trim())
-                .filter(line => line.length > 0);
-
-            if (lines.length === 0) {
-                showStatus('有効なURLが見つかりません', 'error');
-                return;
-            }
-
-            // 各行から最初のURLを抽出
-            const firstUrls = [];
-            for (const line of lines) {
-                const urls = line.split(';')
-                    .map(url => url.trim())
-                    .filter(url => url.length > 0);
-                
-                if (urls.length > 0) {
-                    firstUrls.push(urls[0]);
+                if (inQuotes) {
+                    if (char === '"') {
+                        if (text[i + 1] === '"') {
+                            field += '"';
+                            i++;
+                        } else {
+                            inQuotes = false;
+                        }
+                    } else {
+                        field += char;
+                    }
+                } else if (char === '"') {
+                    inQuotes = true;
+                } else if (char === ",") {
+                    row.push(field);
+                    field = "";
+                } else if (char === "\n") {
+                    row.push(field);
+                    rows.push(row);
+                    row = [];
+                    field = "";
+                } else if (char !== "\r") {
+                    field += char;
                 }
             }
 
-            if (firstUrls.length === 0) {
-                showStatus('有効なURLが見つかりません', 'error');
-                return;
+            if (field.length > 0 || row.length > 0) {
+                row.push(field);
+                rows.push(row);
             }
 
-            isProcessing = true;
-            document.querySelector('.process-btn').disabled = true;
-            
-            // 結果セクションの初期化
-            const resultsSection = document.getElementById('resultsSection');
-            const resultsGrid = document.getElementById('resultsGrid');
-            resultsSection.style.display = 'block';
-            resultsGrid.innerHTML = '';
-            
-            showStatus(`${firstUrls.length}個の画像を処理中...`, 'info');
-            
-            let successCount = 0;
-            let failCount = 0;
+            return rows;
+        }
 
-            for (let i = 0; i < firstUrls.length; i++) {
-                const result = await loadImage(firstUrls[i]);
-                
-                const itemDiv = document.createElement('div');
-                
-                if (result.success) {
-                    successCount++;
-                    itemDiv.className = 'image-item';
-                    
-                    // プレビュー画像の作成
-                    const img = document.createElement('img');
-                    img.src = result.url;
-                    img.onerror = function() {
-                        // 画像読み込みエラーの場合、プロキシ経由で再試行
-                        this.src = `https://corsproxy.io/?${encodeURIComponent(result.url)}`;
-                        this.onerror = function() {
-                            // それでも失敗したらプレースホルダー
-                            this.src = 'data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMjAwIiBoZWlnaHQ9IjIwMCIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj48cmVjdCB3aWR0aD0iMjAwIiBoZWlnaHQ9IjIwMCIgZmlsbD0iI2Y1ZjVmNSIvPjx0ZXh0IHg9IjUwJSIgeT0iNTAlIiBmb250LWZhbWlseT0iQXJpYWwiIGZvbnQtc2l6ZT0iMTQiIGZpbGw9IiM5OTkiIHRleHQtYW5jaG9yPSJtaWRkbGUiIGR5PSIuM2VtIj7nlLvlg4/jgpLoqq3jgb/ovrzjgoHjgb7jgZvjgpM8L3RleHQ+PC9zdmc+';
-                        };
-                    };
-                    itemDiv.appendChild(img);
-                    
-                    // アクションボタンのコンテナ
-                    const actionsDiv = document.createElement('div');
-                    actionsDiv.className = 'image-actions';
-                    
-                    // 画像番号ラベル
-                    const labelDiv = document.createElement('div');
-                    labelDiv.className = 'image-label';
-                    labelDiv.textContent = `画像 ${i + 1}`;
-                    actionsDiv.appendChild(labelDiv);
-                    
-                    // Google Lensで検索ボタン
-                    const googleLensBtn = document.createElement('button');
-                    googleLensBtn.className = 'action-button google-lens-btn';
-                    googleLensBtn.textContent = '🔍 Google Lensで検索';
-                    googleLensBtn.onclick = function() {
-                        const lensUrl = `https://lens.google.com/uploadbyurl?url=${encodeURIComponent(result.url)}&q=${encodeURIComponent('ヨドバシ')}`;
-                        window.open(lensUrl, '_blank');
-                    };
-                    actionsDiv.appendChild(googleLensBtn);
-                    
-                    itemDiv.appendChild(actionsDiv);
-                } else {
-                    failCount++;
-                    itemDiv.className = 'error-item';
-                    itemDiv.textContent = `エラー: 画像 ${i + 1} - ${result.url.substring(0, 50)}...`;
-                }
-                
-                resultsGrid.appendChild(itemDiv);
+        function normalizeLocale(locale) {
+            const value = (locale || "").trim().toLowerCase();
+            if (!value || value === "co.jp" || value === "jp") {
+                return "co.jp";
             }
 
-            isProcessing = false;
-            document.querySelector('.process-btn').disabled = false;
-            
-            if (successCount > 0 && failCount === 0) {
-                showStatus(`✅ ${successCount}個の画像を処理しました`, 'success');
-            } else if (successCount > 0 && failCount > 0) {
-                showStatus(`⚠️ ${successCount}個成功、${failCount}個失敗`, 'error');
+            const supportedDomains = new Set([
+                "com", "ca", "com.mx", "com.br", "co.uk", "de", "fr",
+                "it", "es", "nl", "se", "pl", "com.au", "in"
+            ]);
+            return supportedDomains.has(value) ? value : "co.jp";
+        }
+
+        function amazonUrl(asin, locale) {
+            const cleanAsin = (asin || "").trim();
+            if (!/^[A-Z0-9]{10}$/i.test(cleanAsin)) {
+                return "";
+            }
+            return `https://www.amazon.${normalizeLocale(locale)}/dp/${encodeURIComponent(cleanAsin)}`;
+        }
+
+        function firstImage(imageField) {
+            return (imageField || "")
+                .split(";")
+                .map((url) => url.trim())
+                .find(Boolean) || "";
+        }
+
+        function productsFromCsv(text) {
+            const rows = parseCsv(text.replace(/^\uFEFF/, ""));
+            if (rows.length < 2) {
+                throw new Error("CSVに商品データがありません。");
+            }
+
+            const headers = rows[0].map((header) => header.trim());
+            const imageIndex = headers.indexOf("画像");
+            const asinIndex = headers.indexOf("ASIN");
+            const titleIndex = headers.indexOf("商品名");
+            const localeIndex = headers.indexOf("ロケール");
+
+            if (imageIndex === -1 || asinIndex === -1) {
+                throw new Error("Keepa CSVの「画像」列または「ASIN」列が見つかりません。");
+            }
+
+            return rows.slice(1)
+                .filter((row) => row.some((value) => value.trim()))
+                .map((row) => ({
+                    imageUrl: firstImage(row[imageIndex]),
+                    asin: row[asinIndex] || "",
+                    title: titleIndex >= 0 ? row[titleIndex] || "" : "",
+                    locale: localeIndex >= 0 ? row[localeIndex] || "" : "co.jp"
+                }))
+                .filter((product) => product.imageUrl);
+        }
+
+        function productsFromUrls(text) {
+            return text
+                .split(/\r?\n/)
+                .map((line) => firstImage(line.trim()))
+                .filter(Boolean)
+                .map((imageUrl, index) => ({
+                    imageUrl,
+                    asin: "",
+                    title: `画像 ${index + 1}`,
+                    locale: "co.jp"
+                }));
+        }
+
+        function createProductCard(product, index) {
+            const card = document.createElement("article");
+            card.className = "product-card";
+
+            const imageWrap = document.createElement("div");
+            imageWrap.className = "product-image-wrap";
+
+            const image = document.createElement("img");
+            image.className = "product-image";
+            image.src = product.imageUrl;
+            image.alt = product.title || `商品 ${index + 1}`;
+            image.loading = "lazy";
+            image.referrerPolicy = "no-referrer";
+            image.onerror = () => {
+                image.src = `https://corsproxy.io/?${encodeURIComponent(product.imageUrl)}`;
+                image.onerror = () => {
+                    image.remove();
+                    imageWrap.textContent = "画像を読み込めません";
+                };
+            };
+            imageWrap.appendChild(image);
+
+            const body = document.createElement("div");
+            body.className = "product-body";
+
+            const number = document.createElement("div");
+            number.className = "product-number";
+            number.textContent = `商品 ${index + 1}`;
+
+            const title = document.createElement("h3");
+            title.className = "product-title";
+            title.textContent = product.title || "商品名なし";
+            title.title = product.title || "";
+
+            const asin = document.createElement("div");
+            asin.className = "asin";
+            asin.textContent = product.asin ? `ASIN: ${product.asin}` : "ASINなし";
+
+            const actions = document.createElement("div");
+            actions.className = "card-actions";
+
+            const lensButton = document.createElement("a");
+            lensButton.className = "action-button google-lens-btn";
+            lensButton.href = `https://lens.google.com/uploadbyurl?url=${encodeURIComponent(product.imageUrl)}&q=${encodeURIComponent("ヨドバシ")}`;
+            lensButton.target = "_blank";
+            lensButton.rel = "noopener noreferrer";
+            lensButton.textContent = "🔍 Google Lens＋ヨドバシ";
+
+            const amazonButton = document.createElement("a");
+            const productUrl = amazonUrl(product.asin, product.locale);
+            amazonButton.className = `action-button amazon-btn${productUrl ? "" : " disabled"}`;
+            amazonButton.textContent = "Amazon";
+
+            if (productUrl) {
+                amazonButton.href = productUrl;
+                amazonButton.target = "_blank";
+                amazonButton.rel = "noopener noreferrer";
             } else {
-                showStatus(`❌ すべての処理に失敗しました`, 'error');
+                amazonButton.setAttribute("aria-disabled", "true");
+            }
+
+            actions.append(lensButton, amazonButton);
+            body.append(number, title, asin, actions);
+            card.append(imageWrap, body);
+            return card;
+        }
+
+        function renderProducts(products, sourceName) {
+            if (products.length === 0) {
+                throw new Error("表示できる画像が見つかりませんでした。");
+            }
+
+            resultsGrid.replaceChildren();
+            const fragment = document.createDocumentFragment();
+            products.forEach((product, index) => {
+                fragment.appendChild(createProductCard(product, index));
+            });
+            resultsGrid.appendChild(fragment);
+            resultCount.textContent = `${products.length}件`;
+            resultsSection.style.display = "block";
+            showStatus(`${sourceName}から${products.length}件の商品を読み込みました。`, "success");
+            resultsSection.scrollIntoView({ behavior: "smooth", block: "start" });
+        }
+
+        async function handleCsv(file) {
+            if (!file || !file.name.toLowerCase().endsWith(".csv")) {
+                showStatus("CSVファイルを選択してください。", "error");
+                return;
+            }
+
+            showStatus(`${file.name}を読み込んでいます…`, "info");
+
+            try {
+                const text = await file.text();
+                renderProducts(productsFromCsv(text), file.name);
+            } catch (error) {
+                showStatus(error.message || "CSVの読み込みに失敗しました。", "error");
+            } finally {
+                csvFile.value = "";
+            }
+        }
+
+        function handleManualInput() {
+            const products = productsFromUrls(urlInput.value.trim());
+            try {
+                renderProducts(products, "入力されたURL");
+            } catch (error) {
+                showStatus(error.message, "error");
             }
         }
 
         function clearAll() {
-            document.getElementById('urlInput').value = '';
-            document.getElementById('resultsSection').style.display = 'none';
-            document.getElementById('resultsGrid').innerHTML = '';
-            document.getElementById('statusMessage').style.display = 'none';
+            urlInput.value = "";
+            csvFile.value = "";
+            resultsGrid.replaceChildren();
+            resultsSection.style.display = "none";
+            statusMessage.textContent = "";
+            statusMessage.className = "status-message";
         }
 
-        // Enterキーでの処理実行
-        document.getElementById('urlInput').addEventListener('keydown', function(e) {
-            if (e.key === 'Enter' && e.ctrlKey) {
-                e.preventDefault();
-                processImages();
+        dropZone.addEventListener("click", () => csvFile.click());
+        dropZone.addEventListener("keydown", (event) => {
+            if (event.key === "Enter" || event.key === " ") {
+                event.preventDefault();
+                csvFile.click();
+            }
+        });
+        csvFile.addEventListener("change", () => handleCsv(csvFile.files[0]));
+
+        ["dragenter", "dragover"].forEach((eventName) => {
+            dropZone.addEventListener(eventName, (event) => {
+                event.preventDefault();
+                dropZone.classList.add("dragover");
+            });
+        });
+
+        ["dragleave", "drop"].forEach((eventName) => {
+            dropZone.addEventListener(eventName, (event) => {
+                event.preventDefault();
+                dropZone.classList.remove("dragover");
+            });
+        });
+
+        dropZone.addEventListener("drop", (event) => handleCsv(event.dataTransfer.files[0]));
+        processButton.addEventListener("click", handleManualInput);
+        clearButton.addEventListener("click", clearAll);
+        urlInput.addEventListener("keydown", (event) => {
+            if (event.key === "Enter" && event.ctrlKey) {
+                event.preventDefault();
+                handleManualInput();
             }
         });
     </script>
