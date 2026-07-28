@@ -618,11 +618,11 @@
                 <div class="drop-zone" id="dropZone" role="button" tabindex="0" aria-label="Keepa CSVを選択">
                     <div>
                         <span class="drop-icon">📄</span>
-                        <p class="drop-title">CSVファイルをドロップ</p>
-                        <p class="drop-note">クリックしてファイルを選択することもできます</p>
+                        <p class="drop-title">複数のCSVファイルをドロップ</p>
+                        <p class="drop-note">クリックして複数ファイルを選択することもできます</p>
                     </div>
                 </div>
-                <input type="file" id="csvFile" accept=".csv,text/csv">
+                <input type="file" id="csvFile" accept=".csv,text/csv" multiple>
             </section>
 
             <div class="divider">または従来の方法</div>
@@ -797,6 +797,22 @@
                 }));
         }
 
+        function deduplicateProductsByAsin(products) {
+            const seenAsins = new Set();
+
+            return products.filter((product) => {
+                const asin = (product.asin || "").trim().toUpperCase();
+                if (!asin) {
+                    return true;
+                }
+                if (seenAsins.has(asin)) {
+                    return false;
+                }
+                seenAsins.add(asin);
+                return true;
+            });
+        }
+
         function updateAsinSelection() {
             const checkedBoxes = [...resultsGrid.querySelectorAll(".product-select:checked")];
             const asins = checkedBoxes.map((checkbox) => checkbox.value);
@@ -940,17 +956,37 @@
             resultsSection.scrollIntoView({ behavior: "smooth", block: "start" });
         }
 
-        async function handleCsv(file) {
-            if (!file || !file.name.toLowerCase().endsWith(".csv")) {
+        async function handleCsvFiles(fileList) {
+            const files = [...(fileList || [])];
+            if (files.length === 0) {
                 showStatus("CSVファイルを選択してください。", "error");
                 return;
             }
 
-            showStatus(`${file.name}を読み込んでいます…`, "info");
+            const invalidFile = files.find((file) => !file.name.toLowerCase().endsWith(".csv"));
+            if (invalidFile) {
+                showStatus(`${invalidFile.name}はCSVファイルではありません。`, "error");
+                return;
+            }
+
+            showStatus(`${files.length}個のCSVファイルを読み込んでいます…`, "info");
 
             try {
-                const text = await file.text();
-                renderProducts(productsFromCsv(text), file.name);
+                const productGroups = await Promise.all(
+                    files.map(async (file) => productsFromCsv(await file.text()))
+                );
+                const allProducts = productGroups.flat();
+                const uniqueProducts = deduplicateProductsByAsin(allProducts);
+                const duplicateCount = allProducts.length - uniqueProducts.length;
+                const sourceName = files.length === 1 ? files[0].name : `${files.length}個のCSV`;
+
+                renderProducts(uniqueProducts, sourceName);
+                if (duplicateCount > 0) {
+                    showStatus(
+                        `${sourceName}から${uniqueProducts.length}件の商品を読み込みました（重複ASIN ${duplicateCount}件を統合）。`,
+                        "success"
+                    );
+                }
             } catch (error) {
                 showStatus(error.message || "CSVの読み込みに失敗しました。", "error");
             } finally {
@@ -984,7 +1020,7 @@
                 csvFile.click();
             }
         });
-        csvFile.addEventListener("change", () => handleCsv(csvFile.files[0]));
+        csvFile.addEventListener("change", () => handleCsvFiles(csvFile.files));
 
         ["dragenter", "dragover"].forEach((eventName) => {
             dropZone.addEventListener(eventName, (event) => {
@@ -1000,7 +1036,7 @@
             });
         });
 
-        dropZone.addEventListener("drop", (event) => handleCsv(event.dataTransfer.files[0]));
+        dropZone.addEventListener("drop", (event) => handleCsvFiles(event.dataTransfer.files));
         processButton.addEventListener("click", handleManualInput);
         clearButton.addEventListener("click", clearAll);
         copyAsinButton.addEventListener("click", copySelectedAsins);
